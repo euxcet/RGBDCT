@@ -1,2 +1,2 @@
 # RGBDCT
-rgbd image compression and transmission
+rgbd image compression and transmission.
