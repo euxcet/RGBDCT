@@ -1,43 +1,77 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 #include <winsock2.h>
+#include <fstream>
+#include <ctime>
 #pragma comment(lib,"ws2_32.lib")
 
-#define BUF_SIZE 100
+#define BUF_SIZE 4096
+#define WIDTH 512
+#define HEIGHT 424
 
-int main(){
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2,2),&wsaData);
+DWORD b, e;
 
-	SOCKET servSock=socket(PF_INET,SOCK_STREAM,0);
+class Server {
+public:
+	Server() {}
 
-
-	sockaddr_in sockAddr;
-	memset(&sockAddr,0,sizeof(sockAddr));
-	sockAddr.sin_family=PF_INET;
-	sockAddr.sin_addr.s_addr=inet_addr("127.0.0.1");
-	sockAddr.sin_port=htons(1234);
-	bind(servSock,(SOCKADDR*)&sockAddr,sizeof(SOCKADDR));
-
-	listen(servSock,20);
-
-	SOCKADDR clntAddr;
-	int nsize=sizeof(SOCKADDR);
-	char buffer[BUF_SIZE];
-	while(1){
-		SOCKET clntSock=accept(servSock,(SOCKADDR*)&clntAddr,&nsize);
-		int strLen=recv(clntSock,buffer,BUF_SIZE,0);
-		printf("%s\n",buffer);
-		send(clntSock,buffer,strLen,0);
-
-		closesocket(clntSock);
-		if(buffer[0]=='q')
-			break;
-		memset(buffer,0,BUF_SIZE);
+	void Init() {
+		WSAStartup(MAKEWORD(2, 2), &wsaData);
+		memset(bufRecv, 0, sizeof(bufRecv));
+		sock = socket(PF_INET, SOCK_STREAM, 0);
+		memset(&sockAddr, 0, sizeof(sockAddr));
+		sockAddr.sin_family = PF_INET;
+		sockAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // TODO
+		sockAddr.sin_port = htons(1234); // TODO
+		bind(sock, (SOCKADDR*)&sockAddr, sizeof(SOCKADDR));
+		listen(sock, 20);
+		offset = 0;
+	}
+	void Clean() {
+		WSACleanup();
 
 	}
-	closesocket(servSock);
-	WSACleanup();
-	return 0;
+	void Receive() {
+		int tot = 0;
+		while (1) {
+			int nsize = sizeof(SOCKADDR);
+			csock=accept(sock, (SOCKADDR*)&clntAddr, &nsize);
+			while (recv(csock, bufRecv, BUF_SIZE, 0)) {
 
+				if (offset == 0 && tot == 0) b = GetTickCount();
+
+				for(int i = 0; i < BUF_SIZE; i++) {
+					pic[offset + i] = bufRecv[i];
+				}
+				offset += BUF_SIZE;
+				if (offset == WIDTH * HEIGHT) {
+					tot += 1;
+					offset = 0;
+					std::cerr << "Received " << tot << " pictures\n";
+				}
+			}
+			closesocket(csock);
+			if (tot == 1000) break;
+
+		}
+	}
+
+private:
+	WSADATA wsaData;
+	sockaddr_in sockAddr, clntAddr;
+	char bufRecv[BUF_SIZE];
+	SOCKET sock, csock;
+	char pic[WIDTH * HEIGHT];
+	int offset;
+
+};
+
+Server server;
+int main(){
+	server.Init();
+	server.Receive();
+	e = GetTickCount();
+	printf("%d\n", e - b);
+	server.Clean();
 }
