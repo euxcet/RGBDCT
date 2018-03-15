@@ -22,7 +22,7 @@ public:
 		sock = socket(PF_INET, SOCK_STREAM, 0);
 		memset(&sockAddr, 0, sizeof(sockAddr));
 		sockAddr.sin_family = PF_INET;
-		sockAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // TODO
+		sockAddr.sin_addr.s_addr = inet_addr("192.168.1.10"); // TODO
 		sockAddr.sin_port = htons(1234); // TODO
 		bind(sock, (SOCKADDR*)&sockAddr, sizeof(SOCKADDR));
 		listen(sock, 20);

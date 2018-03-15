@@ -19,7 +19,7 @@ public:
 		WSAStartup(MAKEWORD(2, 2), &wsaData);
 		memset(&sockAddr, 0, sizeof(sockAddr));
 		sockAddr.sin_family = PF_INET;
-		sockAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // TODO
+		sockAddr.sin_addr.s_addr = inet_addr("192.168.1.10"); // TODO
 		sockAddr.sin_port = htons(1234); // TODO
 		memset(bufSend, 0, sizeof(bufSend));
 	}
@@ -30,7 +30,8 @@ public:
 	void Send(const char* str, int length) {
 		sock = socket(PF_INET, SOCK_STREAM, 0);
 		connect(sock, (SOCKADDR*)&sockAddr, sizeof(SOCKADDR));
-		send(sock, str, length, 0);
+for(int i = 0; i < length; i+=4096)
+		send(sock, str+i, 4096, 0);
 		closesocket(sock);
 	}
 
@@ -59,6 +60,7 @@ int main(){
 
 	// Send 1000 times
 	for(int p = 0; p < 1000; p++) {
+std::cerr << p << std::endl;
 		client.Send(s, WIDTH * HEIGHT);
 	}
 
