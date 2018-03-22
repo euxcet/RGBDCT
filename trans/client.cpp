@@ -20,7 +20,7 @@ public:
 		memset(&sockAddr, 0, sizeof(sockAddr));
 		sockAddr.sin_family = PF_INET;
 		sockAddr.sin_addr.s_addr = inet_addr("192.168.1.10"); // TODO
-		sockAddr.sin_port = htons(1234); // TODO
+		sockAddr.sin_port = htons(1235); // TODO
 		memset(bufSend, 0, sizeof(bufSend));
 	}
 	void Clean() {

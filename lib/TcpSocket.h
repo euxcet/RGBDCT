@@ -2,14 +2,17 @@
 #define TCPSOCKET_H
 
 #include <WinSock2.h>
+#include <omp.h>
 #pragma comment(lib,"ws2_32.lib")
 #define BUF_SIZE 4096
 #define HBUF_SIZE 2048
+#define WIDTH 512
+#define HEIGHT 424
 
 
 class TcpSocket {
 public:
-	TcpSocket() {}
+	TcpSocket() { offset = 0; }
 	virtual void Init(const char* ip, int port) = 0;
 	virtual void Run() = 0;
 
@@ -22,18 +25,20 @@ public:
 	void SetDepthData(const UINT16* data, int len);
 	void SetRGBData(const RGBQUAD* data, int len);
 
-private:
+protected:
 	WSADATA wsaData;
 	sockaddr_in sockAddr;
 	SOCKET sock;
 
 	char bufSend[BUF_SIZE];
+	char bufRecv[BUF_SIZE];
+	char pic[WIDTH * HEIGHT];
 
 	UINT16* depthData;
 	RGBQUAD* rgbData;
 	int depthLen;
 	int rgbLen;
-
+	int offset;
 };
 
 class TcpClient : public TcpSocket {
@@ -49,15 +54,15 @@ public:
 	}
 
 	void Run() {
-		Init();
+		Init("127.0.0.1", 1234);
 		while (true) {
-			#pragma omp critical
+//#pragma omp critical
 			{
 				// TODO send data while receiving.
 				if (rgbLen > 0)
-					SendRGB();
+					SendRGBData();
 				if (depthLen > 0)
-					SendDepth();
+					SendDepthData();
 				Receive();
 			}
 		}
@@ -67,7 +72,7 @@ public:
 };
 
 
-class TcpServer : public TcpSocket{
+class TcpServer : public TcpSocket {
 public:
 	TcpServer() {}
 	void Init(const char* ip, int port) {
@@ -83,15 +88,15 @@ public:
 	}
 
 	void Run() {
-		Init();
+		Init("127.0.0.1", 1234);
 		while (true) {
-			#pragma omp critical
+//#pragma omp critical
 			{
 				// TODO send data while receiving.
 				if (rgbLen > 0)
-					SendRGB();
+					SendRGBData();
 				if (depthLen > 0)
-					SendDepth();
+					SendDepthData();
 				Receive();
 			}
 		}
